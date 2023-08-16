@@ -1,20 +1,13 @@
 <?php 
-class WebhookHandler {
+$data = [];
+$input = file_get_contents('php://input');
+// Декодируем строку запроса
+parse_str($input, $data); 
 
-  public function handle() {
+// Преобразуем в JSON
+$json = json_encode($data);
 
-    $input = file_get_contents('php://input');
+file_put_contents('webhooks.log', $json . PHP_EOL, FILE_APPEND);
 
-    parse_str($input, $data);
-    
-    $json = json_encode($data);
-  
-    $this->log($json);
-  }
-
-  public function log($data) {
-
-   file_put_contents('logs/webhooks.log', $data . PHP_EOL, FILE_APPEND);
-
-  }
-}
+header('Content-Type: application/json');
+echo json_encode(['status' => 'ok']);
