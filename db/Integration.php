@@ -26,25 +26,20 @@ class Integration
 
     return $this->db->lastInsertId();
   } 
-  public function createTask($projectId, $taskId, $card, $checklistId, $checkItem) {
+  public function createTask($idTodoist, $idBitrix, $titleTodoist, $titleBitrix) {
 
-    $checklist = 0;
-    if($checklistId != null){
-      $checklist = 1;
-    }
+    // $checklist = 0;
+    // if($checklistId != null){
+    //   $checklist = 1;
+    // }
 
-    $res = $this->db->prepare("INSERT IGNORE INTO tasks (`created`, `due_date`, `name`, `project_id`, `trello_id`, `trello_card_id`, `trello_checklist`, `trello_checklist_id`, `todoist_id`)
-    VALUES (:created, :due_date, :name, :project_id, :trello_id, :trello_card_id, :trello_checklist, :trello_checklist_id, :todoist_id)");
+    $res = $this->db->prepare("INSERT IGNORE INTO tasks (`id_todoist`, `id_bitrix`, `title_todoist`, `title_bitrix`)
+    VALUES (:id_todoist, :id_bitrix, :title_todoist, :title_bitrix)");
     $res->execute([
-      ':created' => date('Y-m-d H:i:s'),
-      'due_date' => date('Y-m-d H:i:s', strtotime($card['due'])),
-      ':name' => $checkItem['name'],
-      ':project_id' => $projectId,
-      ':trello_id' => $checkItem['id'],
-      ':trello_card_id' => $card['id'],
-      ':trello_checklist' => $checklist,
-      ':trello_checklist_id' => $checklistId,
-      ':todoist_id' => $taskId,
+      ':id_todoist' => $idTodoist,
+      ':id_bitrix' => $idBitrix,
+      ':title_todoist' => $titleTodoist,
+      ':title_bitrix' => $titleBitrix,
     ]);
 
 
@@ -70,6 +65,16 @@ class Integration
 
 
   }
+  public function updTask($id, $query) {
+
+    $res = $this->db->prepare("UPDATE tasks SET `name` = :name, WHERE id = :id");
+    $res->execute([
+      ':name' => $query['name'],
+      ':id' => $id,
+    ]);
+
+
+  }
 
   public function getProject($id) {
       $res = $this->db->query( "SELECT * FROM projects WHERE trello_id = '{$id}'");
@@ -78,7 +83,7 @@ class Integration
   }
   
   public function getTask($id) {
-    $res = $this->db->query("SELECT * FROM tasks WHERE trello_id = '{$id}'");
+    $res = $this->db->query("SELECT * FROM tasks WHERE id_bitrix = '{$id}'");
     
     return $res->fetch();
   }
